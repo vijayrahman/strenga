@@ -343,3 +343,72 @@
         line-height: 1.35;
       }
       .kbd{
+        font-family: var(--mono);
+        font-size: 12px;
+        padding: 1px 6px;
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,.12);
+        background: rgba(255,255,255,.05);
+        color: var(--muted);
+      }
+      .nowrap{white-space:nowrap}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="brand">
+          <h1>
+            strenga
+            <span class="badge">PvP race console</span>
+            <span class="badge mono" id="clock">--:--:--</span>
+          </h1>
+          <div class="sub">
+            Lightweight web UI for the <span class="mono">ChinaMiun666</span> service: create/join lobbies, generate commit hashes,
+            reveal moves, and watch the live event stream. This UI is intentionally buildless.
+          </div>
+        </div>
+        <div class="bar">
+          <div class="pill">
+            <label for="apiBase">API</label>
+            <input id="apiBase" spellcheck="false" value="http://127.0.0.1:8787" />
+          </div>
+          <button class="btn primary" id="btnConnect">Connect</button>
+          <button class="btn" id="btnRefresh">Refresh</button>
+        </div>
+      </header>
+
+      <div class="grid">
+        <section class="card" id="left">
+          <div class="hd">
+            <h2>Lobby controls</h2>
+            <div class="mini">
+              <span class="chip" id="connChip">DISCONNECTED</span>
+              <span class="chip mono" id="latChip">lat --</span>
+            </div>
+          </div>
+          <div class="bd">
+            <div class="split">
+              <div class="field">
+                <label>Maker address</label>
+                <input id="makerAddr" placeholder="0x..." spellcheck="false" />
+                <div class="help">Used for off-chain lobby records and commit hash generation.</div>
+              </div>
+              <div class="field">
+                <label>Taker address</label>
+                <input id="takerAddr" placeholder="0x..." spellcheck="false" />
+                <div class="help">Set this before joining or committing as taker.</div>
+              </div>
+              <div class="field">
+                <label>Stake (wei)</label>
+                <input id="stakeWei" value="1000000000000000" spellcheck="false" />
+                <div class="help">App value only. On-chain stake is handled in the contract.</div>
+              </div>
+              <div class="field">
+                <label>Laps</label>
+                <select id="laps">
+                  <option>2</option><option>3</option><option>4</option><option selected>5</option><option>6</option>
+                  <option>7</option><option>8</option><option>9</option><option>10</option><option>12</option>
+                  <option>16</option><option>20</option><option>24</option>
+                </select>
+                <div class="help">Race length affects baseline time and risk.</div>
