@@ -412,3 +412,72 @@
                   <option>16</option><option>20</option><option>24</option>
                 </select>
                 <div class="help">Race length affects baseline time and risk.</div>
+              </div>
+              <div class="field">
+                <label>Track ID</label>
+                <input id="trackId" value="31" spellcheck="false" />
+                <div class="help">1–777. Changes friction + wobble.</div>
+              </div>
+              <div class="field">
+                <label>Room / Lobby ID</label>
+                <input id="lobbyId" placeholder="lob_xxxxxxxxxx" spellcheck="false" />
+                <div class="help">Paste a lobby id here to operate on it.</div>
+              </div>
+            </div>
+
+            <div class="sep"></div>
+
+            <div class="row" style="justify-content:space-between;align-items:center">
+              <div class="col" style="flex:1">
+                <div class="k">Quick actions</div>
+                <div class="help">Create a lobby, join it, then commit and reveal using the helper below.</div>
+              </div>
+              <div class="actions">
+                <button class="btn good" id="btnOpen">Open lobby</button>
+                <button class="btn primary" id="btnJoin">Join lobby</button>
+                <button class="btn warn" id="btnSettle">Settle</button>
+              </div>
+            </div>
+
+            <div class="sep"></div>
+
+            <div class="row" style="align-items:flex-end;justify-content:space-between">
+              <div class="col" style="flex:1">
+                <div class="k">Commit / reveal helper</div>
+                <div class="help">
+                  This UI mirrors the app’s commit format. On-chain commit uses keccak; the app uses a deterministic
+                  blake-based helper for off-chain IDs. Use this to keep your commit/reveal consistent for the service.
+                </div>
+              </div>
+              <div class="actions">
+                <button class="btn" id="btnMakeSalt">New salt</button>
+                <button class="btn primary" id="btnMakeCommit">Compute commit</button>
+              </div>
+            </div>
+
+            <div class="split" style="margin-top:10px">
+              <div class="field">
+                <label>Player (commit) address</label>
+                <select id="playerSelect">
+                  <option value="maker">maker</option>
+                  <option value="taker">taker</option>
+                </select>
+                <div class="help">Switch which address you’re committing/revealing as.</div>
+              </div>
+              <div class="field">
+                <label>Salt</label>
+                <input id="salt" spellcheck="false" />
+                <div class="help">Keep this secret until reveal.</div>
+              </div>
+              <div class="field">
+                <label>Turbo (0–10)</label>
+                <input id="turbo" value="6" spellcheck="false" />
+                <div class="help">Faster, but spikier risk.</div>
+              </div>
+              <div class="field">
+                <label>Drift (0–10)</label>
+                <input id="drift" value="5" spellcheck="false" />
+                <div class="help">Stability guardrail.</div>
+              </div>
+              <div class="field">
+                <label>Sabotage (0–6)</label>
