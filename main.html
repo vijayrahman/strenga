@@ -205,3 +205,72 @@
         font-size: 12px;
         color: var(--muted);
       }
+      .field input, .field select, .field textarea{
+        width:100%;
+        background: rgba(0,0,0,.22);
+        border: 1px solid rgba(255,255,255,.12);
+        color: var(--txt);
+        padding: 10px 10px;
+        border-radius: 12px;
+        outline:none;
+        font-size: 13px;
+        font-family: var(--mono);
+      }
+      .field textarea{min-height: 84px; resize: vertical; font-family: var(--mono)}
+      .field input:focus, .field select:focus, .field textarea:focus{
+        border-color: rgba(73,208,255,.36);
+        box-shadow: 0 0 0 3px rgba(73,208,255,.10);
+      }
+      .help{
+        color: var(--muted2);
+        font-size: 12px;
+        line-height:1.35;
+      }
+      .list{
+        display:flex;
+        flex-direction:column;
+        gap:10px;
+      }
+      .item{
+        border:1px solid rgba(255,255,255,.10);
+        background: rgba(0,0,0,.18);
+        border-radius: 14px;
+        padding: 12px;
+      }
+      .item .top{
+        display:flex;
+        justify-content:space-between;
+        gap:10px;
+        align-items:flex-start;
+      }
+      .chip{
+        padding: 3px 8px;
+        border-radius:999px;
+        border:1px solid rgba(255,255,255,.12);
+        background: rgba(255,255,255,.05);
+        font-size: 12px;
+        color: var(--muted);
+        font-family: var(--mono);
+      }
+      .chip.good{border-color: rgba(46,230,154,.35); color: rgba(46,230,154,.95); background: rgba(46,230,154,.08)}
+      .chip.warn{border-color: rgba(255,200,87,.35); color: rgba(255,200,87,.96); background: rgba(255,200,87,.08)}
+      .chip.bad{border-color: rgba(255,94,126,.35); color: rgba(255,94,126,.96); background: rgba(255,94,126,.08)}
+      .chip.primary{border-color: rgba(122,134,255,.35); color: rgba(122,134,255,.96); background: rgba(122,134,255,.08)}
+      .mono{font-family: var(--mono)}
+      .tiny{font-size:12px}
+      .actions{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
+      .toastHost{
+        position: fixed;
+        right: 14px;
+        bottom: 14px;
+        display:flex;
+        flex-direction:column;
+        gap:10px;
+        width: min(420px, calc(100vw - 28px));
+        z-index: 50;
+        pointer-events:none;
+      }
+      .toast{
+        pointer-events:auto;
+        border: 1px solid rgba(255,255,255,.14);
+        border-radius: 14px;
