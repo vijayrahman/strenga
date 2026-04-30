@@ -136,3 +136,72 @@
         background: linear-gradient(180deg, rgba(46,230,154,.18), rgba(46,230,154,.08));
       }
       .btn.warn{
+        border-color: rgba(255,200,87,.42);
+        background: linear-gradient(180deg, rgba(255,200,87,.18), rgba(255,200,87,.08));
+      }
+      .btn.bad{
+        border-color: rgba(255,94,126,.42);
+        background: linear-gradient(180deg, rgba(255,94,126,.18), rgba(255,94,126,.08));
+      }
+      .grid{
+        display:grid;
+        grid-template-columns: 420px 1fr;
+        gap:14px;
+        align-items:start;
+      }
+      @media (max-width: 1040px){
+        .grid{grid-template-columns: 1fr}
+      }
+      .card{
+        border:1px solid var(--stroke);
+        background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+        border-radius: var(--rad);
+        box-shadow: var(--shadow);
+        overflow:hidden;
+      }
+      .card .hd{
+        padding: 14px 14px 10px;
+        border-bottom: 1px solid rgba(255,255,255,.08);
+        display:flex;
+        align-items:flex-end;
+        justify-content:space-between;
+        gap:10px;
+      }
+      .card .hd h2{
+        margin:0;
+        font-size:14px;
+        letter-spacing:.35px;
+        font-weight: 780;
+      }
+      .card .hd .mini{
+        font-size: 12px;
+        color: var(--muted2);
+        display:flex;
+        gap:10px;
+        align-items:center;
+      }
+      .card .bd{padding: 12px 14px 14px}
+      .row{display:flex; gap:10px; flex-wrap:wrap}
+      .col{display:flex; flex-direction:column; gap:8px}
+      .k{
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .v{
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--txt);
+      }
+      .muted{color: var(--muted2)}
+      .sep{height:1px;background:rgba(255,255,255,.08);margin:12px 0}
+      .field{
+        display:flex;
+        flex-direction:column;
+        gap:6px;
+        min-width: 180px;
+      }
+      .field label{
+        font-size: 12px;
+        color: var(--muted);
+      }
