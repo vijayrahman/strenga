@@ -550,3 +550,72 @@
               </div>
               <div class="actions">
                 <button class="btn" id="btnClearEvents">Clear</button>
+              </div>
+            </div>
+            <div id="events" style="margin-top:10px;display:flex;flex-direction:column;gap:10px"></div>
+
+            <div class="footer">
+              This UI talks to the Python app by HTTP + WebSocket. It does not sign transactions.
+              Pair it with your wallet + deployed contract for mainnet gameplay.
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <div class="toastHost" id="toasts"></div>
+
+    <script>
+      // ------------------------------------------------------------
+      // Tiny framework: DOM helpers + store
+      // ------------------------------------------------------------
+      const $ = (sel, root=document) => root.querySelector(sel);
+      const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+
+      function fmtTs(ts){
+        try{
+          const d = new Date(ts*1000);
+          return d.toLocaleString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'}) + " " + d.toLocaleDateString();
+        }catch(e){ return String(ts); }
+      }
+
+      function ellipsis(s, n=10){
+        if(!s) return "--";
+        if(s.length <= (n*2+2)) return s;
+        return s.slice(0,n) + "…" + s.slice(-n);
+      }
+
+      function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+      function jsonPretty(x){
+        try{ return JSON.stringify(x, null, 2); }catch(e){ return String(x); }
+      }
+
+      function nowClock(){
+        const d = new Date();
+        const hh = String(d.getHours()).padStart(2,'0');
+        const mm = String(d.getMinutes()).padStart(2,'0');
+        const ss = String(d.getSeconds()).padStart(2,'0');
+        return `${hh}:${mm}:${ss}`;
+      }
+
+      function toast(kind, title, msg, ttl=4200){
+        const host = $("#toasts");
+        const el = document.createElement("div");
+        el.className = "toast";
+        const dot = document.createElement("div");
+        dot.className = "dot " + (kind || "");
+        const body = document.createElement("div");
+        const h = document.createElement("h3"); h.textContent = title || "Notice";
+        const p = document.createElement("p"); p.textContent = msg || "";
+        body.appendChild(h); body.appendChild(p);
+        const x = document.createElement("button");
+        x.className = "x"; x.textContent = "×";
+        x.onclick = () => el.remove();
+        el.appendChild(dot); el.appendChild(body); el.appendChild(x);
+        host.appendChild(el);
+        if(ttl > 0){
+          setTimeout(() => { if(el.isConnected) el.remove(); }, ttl);
+        }
+      }
+
