@@ -274,3 +274,72 @@
         pointer-events:auto;
         border: 1px solid rgba(255,255,255,.14);
         border-radius: 14px;
+        background: rgba(10,14,20,.84);
+        backdrop-filter: blur(10px);
+        padding: 10px 12px;
+        box-shadow: 0 18px 60px rgba(0,0,0,.55);
+        display:flex;
+        gap:12px;
+        align-items:flex-start;
+      }
+      .dot{
+        width:10px;height:10px;border-radius:999px;margin-top:4px;
+        background: rgba(255,255,255,.35);
+        box-shadow: 0 0 0 3px rgba(255,255,255,.06);
+      }
+      .dot.good{background: var(--good); box-shadow: 0 0 0 3px rgba(46,230,154,.12)}
+      .dot.warn{background: var(--warn); box-shadow: 0 0 0 3px rgba(255,200,87,.12)}
+      .dot.bad{background: var(--bad); box-shadow: 0 0 0 3px rgba(255,94,126,.12)}
+      .toast h3{margin:0;font-size:13px}
+      .toast p{margin:2px 0 0;font-size:12px;color:var(--muted2);line-height:1.32}
+      .toast .x{
+        margin-left:auto;
+        border:1px solid rgba(255,255,255,.12);
+        background: rgba(255,255,255,.04);
+        border-radius: 10px;
+        padding: 6px 8px;
+        cursor:pointer;
+      }
+      .split{
+        display:grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      @media (max-width: 660px){
+        .split{grid-template-columns: 1fr}
+      }
+      .raceBoard{
+        border:1px solid rgba(255,255,255,.10);
+        background: radial-gradient(900px 280px at 60% 10%, rgba(73,208,255,.12), transparent 60%),
+                    radial-gradient(700px 240px at 30% 60%, rgba(122,134,255,.12), transparent 62%),
+                    rgba(0,0,0,.20);
+        border-radius: 16px;
+        overflow:hidden;
+        position:relative;
+        min-height: 270px;
+      }
+      canvas{display:block; width:100%; height:270px}
+      .overlay{
+        position:absolute;
+        left:12px; top:12px;
+        display:flex;
+        gap:8px;
+        align-items:center;
+        flex-wrap:wrap;
+      }
+      .overlay .tag{
+        padding: 5px 9px;
+        border-radius: 999px;
+        background: rgba(0,0,0,.40);
+        border: 1px solid rgba(255,255,255,.12);
+        color: var(--muted);
+        font-size: 12px;
+        font-family: var(--mono);
+      }
+      .footer{
+        margin-top: 16px;
+        color: var(--muted2);
+        font-size: 12px;
+        line-height: 1.35;
+      }
+      .kbd{
