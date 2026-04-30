@@ -619,3 +619,72 @@
         }
       }
 
+      function logLine(s){
+        const ta = $("#log");
+        const line = `[${nowClock()}] ${s}`;
+        ta.value = ta.value ? (ta.value + "\n" + line) : line;
+        ta.scrollTop = ta.scrollHeight;
+      }
+
+      function isHexAddress(s){
+        if(typeof s !== "string") return false;
+        if(!s.startsWith("0x") || s.length !== 42) return false;
+        for(let i=2;i<s.length;i++){
+          const c = s[i];
+          if(!("0123456789abcdefABCDEF".includes(c))) return false;
+        }
+        return true;
+      }
+
+      function normalizeAddr(s){
+        if(!isHexAddress(s)) throw new Error("bad address");
+        return "0x" + s.slice(2).toLowerCase();
+      }
+
+      function clamp(x, lo, hi){
+        x = Number(x);
+        if(Number.isNaN(x)) return lo;
+        return Math.max(lo, Math.min(hi, x));
+      }
+
+      function getApiBase(){
+        let b = String($("#apiBase").value || "").trim();
+        if(b.endsWith("/")) b = b.slice(0, -1);
+        return b;
+      }
+
+      function getWsBase(){
+        const api = getApiBase();
+        const u = new URL(api);
+        u.protocol = (u.protocol === "https:") ? "wss:" : "ws:";
+        u.pathname = "/ws";
+        u.search = "";
+        u.hash = "";
+        return u.toString();
+      }
+
+      const store = {
+        connected: false,
+        wsConnected: false,
+        ws: null,
+        clientId: null,
+        roomCode: null,
+        lobbies: [],
+        lobbyById: new Map(),
+        activeLobby: null,
+        latencyMs: null,
+        events: [],
+        lastRefreshAt: 0,
+      };
+
+      function setConnChip(){
+        const chip = $("#connChip");
+        if(store.connected){
+          chip.textContent = "HTTP OK";
+          chip.className = "chip good";
+        }else{
+          chip.textContent = "DISCONNECTED";
+          chip.className = "chip bad";
+        }
+      }
+
