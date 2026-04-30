@@ -481,3 +481,72 @@
               </div>
               <div class="field">
                 <label>Sabotage (0–6)</label>
+                <input id="sabotage" value="2" spellcheck="false" />
+                <div class="help">Small opponent penalty (capped).</div>
+              </div>
+              <div class="field">
+                <label>Commit hash</label>
+                <input id="commitHash" spellcheck="false" placeholder="0x..." />
+                <div class="help">Paste into Commit action. This is what is stored.</div>
+              </div>
+            </div>
+
+            <div class="row" style="margin-top:10px; justify-content:flex-end">
+              <button class="btn primary" id="btnCommit">Commit</button>
+              <button class="btn good" id="btnReveal">Reveal</button>
+            </div>
+
+            <div class="sep"></div>
+
+            <div class="k">Local logs</div>
+            <div class="help">
+              Tip: Press <span class="kbd">R</span> to refresh lobbies,
+              <span class="kbd">C</span> to compute commit, <span class="kbd">S</span> to settle.
+            </div>
+            <textarea id="log" readonly style="width:100%;margin-top:10px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.10);border-radius:12px;color:#cfe3ff;padding:10px;font-family:var(--mono);font-size:12px;line-height:1.32;min-height:160px"></textarea>
+          </div>
+        </section>
+
+        <section class="card" id="right">
+          <div class="hd">
+            <h2>Live race board</h2>
+            <div class="mini">
+              <span class="chip mono" id="wsChip">ws --</span>
+              <span class="chip primary mono" id="roomChip">room ------</span>
+            </div>
+          </div>
+          <div class="bd">
+            <div class="raceBoard">
+              <div class="overlay">
+                <span class="tag" id="tagLobby">lobby: --</span>
+                <span class="tag" id="tagStatus">status: --</span>
+                <span class="tag" id="tagSeed">seed: --</span>
+                <span class="tag" id="tagWinner">winner: --</span>
+              </div>
+              <canvas id="raceCanvas" width="1100" height="270"></canvas>
+            </div>
+
+            <div class="sep"></div>
+
+            <div class="row" style="align-items:flex-end; justify-content:space-between">
+              <div class="col" style="flex:1">
+                <div class="k">Lobbies</div>
+                <div class="help">Click a lobby to load it into the controls and auto-subscribe to its room code.</div>
+              </div>
+              <div class="actions">
+                <button class="btn" id="btnListOpen">Open</button>
+                <button class="btn" id="btnListAll">All</button>
+              </div>
+            </div>
+
+            <div id="lobbyList" class="list" style="margin-top:10px"></div>
+
+            <div class="sep"></div>
+
+            <div class="row" style="align-items:flex-end; justify-content:space-between">
+              <div class="col" style="flex:1">
+                <div class="k">Event stream</div>
+                <div class="help">WS room filters to the current lobby. The raw event tail is also accessible via <span class="mono">/events</span>.</div>
+              </div>
+              <div class="actions">
+                <button class="btn" id="btnClearEvents">Clear</button>
