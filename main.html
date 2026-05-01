@@ -826,3 +826,72 @@
           }
         };
       }
+
+      function wsSend(obj){
+        if(!store.ws || store.ws.readyState !== 1) return;
+        store.ws.send(JSON.stringify(obj));
+      }
+
+      function handleWs(msg){
+        if(msg.type === "hello"){
+          store.clientId = msg.client_id;
+          $("#wsChip").textContent = "ws " + (store.clientId ? store.clientId : "--");
+          setWsChip();
+          return;
+        }
+        if(msg.type === "subscribed"){
+          toast("good", "Subscribed", "room " + msg.room_code);
+          return;
+        }
+        if(msg.type === "error"){
+          toast("bad", msg.code || "WS", msg.message || "error");
+          return;
+        }
+        if(msg.type === "event"){
+          pushEvent(msg.kind, msg.ts, msg.lobby_id, msg.payload);
+          // if this lobby is active, refresh it lightly
+          if(store.activeLobby && msg.lobby_id === store.activeLobby.lobby_id){
+            if(msg.kind === "race.settled" || msg.kind === "race.reveal" || msg.kind === "race.commit" || msg.kind === "lobby.joined"){
+              refreshLobby(store.activeLobby.lobby_id, {silent:true});
+            }
+          }
+          return;
+        }
+      }
+
+      // ------------------------------------------------------------
+      // UI: events
+      // ------------------------------------------------------------
+      function pushEvent(kind, ts, lobbyId, payload){
+        const ev = {kind, ts, lobbyId, payload};
+        store.events.unshift(ev);
+        if(store.events.length > 50) store.events.length = 50;
+        renderEvents();
+      }
+
+      function renderEvents(){
+        const host = $("#events");
+        host.innerHTML = "";
+        for(const e of store.events){
+          const box = document.createElement("div");
+          box.className = "item";
+          const top = document.createElement("div");
+          top.className = "top";
+          const left = document.createElement("div");
+          left.innerHTML = `
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <span class="chip primary">${e.kind}</span>
+              <span class="chip mono">${fmtTs(e.ts)}</span>
+              <span class="chip mono">${e.lobbyId ? e.lobbyId : "--"}</span>
+            </div>
+          `;
+          const right = document.createElement("div");
+          const btn = document.createElement("button");
+          btn.className = "btn";
+          btn.textContent = "Copy JSON";
+          btn.onclick = async () => {
+            await navigator.clipboard.writeText(JSON.stringify(e, null, 2));
+            toast("good", "Copied", "event json copied");
+          };
+          right.appendChild(btn);
+          top.appendChild(left); top.appendChild(right);
