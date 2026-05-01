@@ -1033,3 +1033,72 @@
         logLine("active lobby " + lobby.lobby_id + " room " + lobby.room_code);
       }
 
+      async function subscribeRoom(roomCode){
+        store.roomCode = roomCode;
+        setRoomChip();
+        if(store.wsConnected){
+          wsSend({op:"sub", room_code: roomCode});
+        }
+      }
+
+      // ------------------------------------------------------------
+      // Actions: open/join/commit/reveal/settle
+      // ------------------------------------------------------------
+      function readNum(id, lo, hi){
+        const v = Number(String($(id).value || "").trim());
+        if(Number.isNaN(v)) throw new Error("bad number");
+        return clamp(v, lo, hi);
+      }
+
+      async function openLobby(){
+        const maker = String($("#makerAddr").value || "").trim();
+        if(!isHexAddress(maker)) throw new Error("maker address missing/invalid");
+        const stake = BigInt(String($("#stakeWei").value || "").trim());
+        if(stake <= 0n) throw new Error("stake must be > 0");
+        const laps = Number($("#laps").value);
+        const track = readNum("#trackId", 1, 777);
+        const body = { maker_addr: maker, stake_wei: Number(stake.toString()), laps: laps, track_id: track };
+        const out = await api("/lobbies/open", {method:"POST", body});
+        toast("good", "Lobby opened", `${out.room_code} / ${out.lobby_id}`);
+        logLine("opened lobby " + out.lobby_id + " room " + out.room_code);
+        $("#lobbyId").value = out.lobby_id;
+        await refreshLobbies("OPEN");
+        const full = await api(`/lobbies/${encodeURIComponent(out.lobby_id)}`);
+        await loadLobby(full);
+      }
+
+      async function joinLobby(){
+        const lobbyId = String($("#lobbyId").value || "").trim();
+        if(!lobbyId) throw new Error("lobby id missing");
+        const taker = String($("#takerAddr").value || "").trim();
+        if(!isHexAddress(taker)) throw new Error("taker address missing/invalid");
+        const out = await api(`/lobbies/${encodeURIComponent(lobbyId)}/join`, {method:"POST", body:{taker_addr: taker}});
+        toast("good", "Joined", "lobby " + lobbyId);
+        logLine("joined lobby as taker " + taker);
+        await loadLobby(out);
+        await refreshLobbies("OPEN");
+      }
+
+      async function commitMove(){
+        const lobbyId = String($("#lobbyId").value || "").trim();
+        if(!lobbyId) throw new Error("lobby id missing");
+        const player = getPlayerAddr();
+        const commitHash = String($("#commitHash").value || "").trim();
+        if(!commitHash.startsWith("0x") || commitHash.length < 10) throw new Error("commit hash missing");
+        const out = await api(`/lobbies/${encodeURIComponent(lobbyId)}/commit`, {method:"POST", body:{player_addr: player, commit_hash: commitHash}});
+        toast("warn", "Committed", ellipsis(player, 10));
+        logLine("commit posted for " + player);
+        await loadLobby(out);
+      }
+
+      async function revealMove(){
+        const lobbyId = String($("#lobbyId").value || "").trim();
+        if(!lobbyId) throw new Error("lobby id missing");
+        const player = getPlayerAddr();
+        const salt = String($("#salt").value || "").trim();
+        if(!salt) throw new Error("salt missing");
+        const turbo = readNum("#turbo", 0, 10);
+        const drift = readNum("#drift", 0, 10);
+        const sabotage = readNum("#sabotage", 0, 6);
+        const out = await api(`/lobbies/${encodeURIComponent(lobbyId)}/reveal`, {
+          method:"POST",
