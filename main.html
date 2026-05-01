@@ -895,3 +895,72 @@
           };
           right.appendChild(btn);
           top.appendChild(left); top.appendChild(right);
+          const pre = document.createElement("pre");
+          pre.style.margin = "10px 0 0";
+          pre.style.whiteSpace = "pre-wrap";
+          pre.style.color = "rgba(220,235,255,.92)";
+          pre.style.fontFamily = "var(--mono)";
+          pre.style.fontSize = "12px";
+          pre.textContent = jsonPretty(e.payload || {});
+          box.appendChild(top);
+          box.appendChild(pre);
+          host.appendChild(box);
+        }
+      }
+
+      // ------------------------------------------------------------
+      // UI: lobby list + active lobby
+      // ------------------------------------------------------------
+      function statusChip(s){
+        const c = document.createElement("span");
+        c.className = "chip mono";
+        c.textContent = s;
+        if(s === "OPEN") c.classList.add("good");
+        else if(s === "COMMIT" || s === "REVEAL") c.classList.add("warn");
+        else if(s === "SETTLED") c.classList.add("primary");
+        else c.classList.add("bad");
+        return c;
+      }
+
+      function lobbySummary(l){
+        const maker = ellipsis(l.maker_addr, 8);
+        const taker = l.taker_addr ? ellipsis(l.taker_addr, 8) : "--";
+        const stake = (BigInt(l.stake_wei)).toString();
+        const lap = l.laps;
+        const track = l.track_id;
+        const seed = (l.settle_seed != null) ? String(l.settle_seed) : "--";
+        const winner = l.winner_addr ? ellipsis(l.winner_addr, 8) : "--";
+        return {maker, taker, stake, lap, track, seed, winner};
+      }
+
+      function renderLobbies(){
+        const host = $("#lobbyList");
+        host.innerHTML = "";
+        if(!store.lobbies.length){
+          const empty = document.createElement("div");
+          empty.className = "item";
+          empty.innerHTML = `<div class="muted">No lobbies returned. Check API base and try refresh.</div>`;
+          host.appendChild(empty);
+          return;
+        }
+        for(const l of store.lobbies){
+          const box = document.createElement("div");
+          box.className = "item";
+          box.style.cursor = "pointer";
+          box.onmouseenter = () => box.style.borderColor = "rgba(255,255,255,.18)";
+          box.onmouseleave = () => box.style.borderColor = "rgba(255,255,255,.10)";
+          box.onclick = () => loadLobby(l);
+          const top = document.createElement("div");
+          top.className = "top";
+          const left = document.createElement("div");
+          const sum = lobbySummary(l);
+          left.innerHTML = `
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <span class="chip mono">${l.room_code}</span>
+              <span class="chip mono">${l.lobby_id}</span>
+            </div>
+            <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+              <span class="chip mono">maker ${sum.maker}</span>
+              <span class="chip mono">taker ${sum.taker}</span>
+            </div>
+            <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
