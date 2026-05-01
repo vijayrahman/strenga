@@ -757,3 +757,72 @@
           setConnChip();
           toast("bad", "HTTP error", String(e.message || e));
         }
+      }
+
+      // ------------------------------------------------------------
+      // Commit helper: browser hash
+      // ------------------------------------------------------------
+      async function blakeishCommit(player, salt, turbo, drift, sabotage){
+        // Mirrors app: normalize(player)|salt|turbo|drift|sabotage, then blake-like hash.
+        // Browsers don't ship blake2s widely, so we use SHA-256 here; this is for UI convenience only.
+        const payload = `${normalizeAddr(player)}|${salt}|${turbo}|${drift}|${sabotage}`;
+        const bytes = new TextEncoder().encode(payload);
+        const dig = await crypto.subtle.digest("SHA-256", bytes);
+        const hex = Array.from(new Uint8Array(dig)).map(b=>b.toString(16).padStart(2,'0')).join('');
+        return "0x" + hex;
+      }
+
+      function newSalt(){
+        const bytes = new Uint8Array(24);
+        crypto.getRandomValues(bytes);
+        const s = Array.from(bytes).map(b => b.toString(16).padStart(2,'0')).join('');
+        return "s_" + s;
+      }
+
+      function getPlayerAddr(){
+        const which = $("#playerSelect").value;
+        const maker = String($("#makerAddr").value || "").trim();
+        const taker = String($("#takerAddr").value || "").trim();
+        const addr = (which === "maker") ? maker : taker;
+        if(!isHexAddress(addr)) throw new Error("player address missing/invalid");
+        return addr;
+      }
+
+      // ------------------------------------------------------------
+      // WS
+      // ------------------------------------------------------------
+      async function wsConnect(){
+        if(store.ws && (store.ws.readyState === 0 || store.ws.readyState === 1)) return;
+        const url = getWsBase();
+        logLine("WS connecting " + url);
+        const ws = new WebSocket(url);
+        store.ws = ws;
+        store.wsConnected = false;
+        setWsChip();
+        ws.onopen = () => {
+          store.wsConnected = true;
+          setWsChip();
+          toast("good", "WebSocket", "connected");
+          logLine("WS open");
+          if(store.roomCode){
+            ws.send(JSON.stringify({op:"sub", room_code: store.roomCode}));
+          }
+        };
+        ws.onclose = () => {
+          store.wsConnected = false;
+          setWsChip();
+          logLine("WS closed");
+        };
+        ws.onerror = () => {
+          store.wsConnected = false;
+          setWsChip();
+        };
+        ws.onmessage = (ev) => {
+          try{
+            const msg = JSON.parse(ev.data);
+            handleWs(msg);
+          }catch(e){
+            logLine("WS msg parse error");
+          }
+        };
+      }
