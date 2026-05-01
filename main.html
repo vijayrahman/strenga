@@ -1102,3 +1102,72 @@
         const sabotage = readNum("#sabotage", 0, 6);
         const out = await api(`/lobbies/${encodeURIComponent(lobbyId)}/reveal`, {
           method:"POST",
+          body:{player_addr: player, salt, turbo, drift, sabotage}
+        });
+        toast("good", "Revealed", ellipsis(player, 10));
+        logLine("reveal posted for " + player);
+        await loadLobby(out);
+      }
+
+      async function settle(){
+        const lobbyId = String($("#lobbyId").value || "").trim();
+        if(!lobbyId) throw new Error("lobby id missing");
+        const out = await api(`/lobbies/${encodeURIComponent(lobbyId)}/settle`, {method:"POST"});
+        toast("primary", "Settle attempted", out.status);
+        logLine("settle called; status now " + out.status);
+        await loadLobby(out);
+        await refreshLobbies("OPEN");
+      }
+
+      // ------------------------------------------------------------
+      // Race canvas
+      // ------------------------------------------------------------
+      const canvas = $("#raceCanvas");
+      const ctx = canvas.getContext("2d");
+      let anim = null;
+
+      function resizeCanvas(){
+        const dpr = window.devicePixelRatio || 1;
+        const cssW = canvas.clientWidth || 1100;
+        const cssH = canvas.clientHeight || 270;
+        canvas.width = Math.floor(cssW * dpr);
+        canvas.height = Math.floor(cssH * dpr);
+        ctx.setTransform(dpr,0,0,dpr,0,0);
+        drawIdle();
+      }
+
+      function drawIdle(){
+        const w = canvas.clientWidth, h = canvas.clientHeight;
+        ctx.clearRect(0,0,w,h);
+        // track
+        ctx.globalAlpha = 1;
+        const g = ctx.createLinearGradient(0,0,w,0);
+        g.addColorStop(0, "rgba(122,134,255,.08)");
+        g.addColorStop(.5, "rgba(73,208,255,.10)");
+        g.addColorStop(1, "rgba(46,230,154,.08)");
+        ctx.fillStyle = g;
+        ctx.fillRect(10, 40, w-20, h-80);
+        // lanes
+        ctx.strokeStyle = "rgba(255,255,255,.14)";
+        ctx.lineWidth = 1;
+        for(let i=0;i<5;i++){
+          const y = 55 + i * ((h-110)/4);
+          ctx.beginPath();
+          ctx.moveTo(18, y);
+          ctx.lineTo(w-18, y);
+          ctx.stroke();
+        }
+        // start/finish
+        ctx.fillStyle = "rgba(0,0,0,.35)";
+        ctx.fillRect(24, 46, 10, h-92);
+        ctx.fillRect(w-34, 46, 10, h-92);
+        ctx.fillStyle = "rgba(255,255,255,.60)";
+        ctx.font = "12px var(--mono)";
+        ctx.fillText("START", 20, 34);
+        ctx.fillText("FINISH", w-62, 34);
+      }
+
+      function prng(seed){
+        let x = seed >>> 0;
+        return () => {
+          x ^= x << 13; x >>>= 0;
