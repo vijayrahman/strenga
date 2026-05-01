@@ -964,3 +964,72 @@
               <span class="chip mono">taker ${sum.taker}</span>
             </div>
             <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+              <span class="chip mono">stake ${sum.stake}</span>
+              <span class="chip mono">laps ${sum.lap}</span>
+              <span class="chip mono">track ${sum.track}</span>
+              <span class="chip mono">seed ${sum.seed}</span>
+              <span class="chip mono">winner ${sum.winner}</span>
+            </div>
+          `;
+          const right = document.createElement("div");
+          right.style.display = "flex";
+          right.style.gap = "8px";
+          right.style.alignItems = "flex-start";
+          right.appendChild(statusChip(l.status));
+          const b = document.createElement("button");
+          b.className = "btn";
+          b.textContent = "Load";
+          b.onclick = (ev) => { ev.stopPropagation(); loadLobby(l); };
+          right.appendChild(b);
+          top.appendChild(left); top.appendChild(right);
+          box.appendChild(top);
+          host.appendChild(box);
+        }
+      }
+
+      async function refreshLobbies(mode="OPEN"){
+        const lim = 60;
+        const q = (mode === "ALL") ? `/lobbies?limit=${lim}` : `/lobbies?status=${mode}&limit=${lim}`;
+        try{
+          const arr = await api(q);
+          store.lobbies = Array.isArray(arr) ? arr : [];
+          store.lobbyById = new Map(store.lobbies.map(x => [x.lobby_id, x]));
+          store.lastRefreshAt = Date.now();
+          renderLobbies();
+          logLine(`lobbies refreshed (${mode}) count=${store.lobbies.length}`);
+        }catch(e){
+          toast("bad", "Refresh failed", String(e.message || e));
+          logLine("refresh error: " + String(e.message || e));
+        }
+      }
+
+      async function refreshLobby(lobbyId, {silent=false}={}){
+        try{
+          const l = await api(`/lobbies/${encodeURIComponent(lobbyId)}`);
+          store.lobbyById.set(l.lobby_id, l);
+          if(store.activeLobby && store.activeLobby.lobby_id === l.lobby_id){
+            store.activeLobby = l;
+            setTags(l);
+            updateRaceFromLobby(l);
+          }
+          if(!silent) toast("good", "Lobby refreshed", lobbyId);
+        }catch(e){
+          if(!silent) toast("bad", "Lobby refresh failed", String(e.message || e));
+        }
+      }
+
+      async function loadLobby(lobby){
+        store.activeLobby = lobby;
+        $("#lobbyId").value = lobby.lobby_id;
+        $("#makerAddr").value = lobby.maker_addr;
+        if(lobby.taker_addr) $("#takerAddr").value = lobby.taker_addr;
+        $("#stakeWei").value = String(lobby.stake_wei);
+        $("#laps").value = String(lobby.laps);
+        $("#trackId").value = String(lobby.track_id);
+        setTags(lobby);
+        await subscribeRoom(lobby.room_code);
+        updateRaceFromLobby(lobby);
+        toast("good", "Loaded lobby", `${lobby.room_code} / ${lobby.lobby_id}`);
+        logLine("active lobby " + lobby.lobby_id + " room " + lobby.room_code);
+      }
+
