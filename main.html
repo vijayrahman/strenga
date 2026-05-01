@@ -1171,3 +1171,72 @@
         let x = seed >>> 0;
         return () => {
           x ^= x << 13; x >>>= 0;
+          x ^= x >>> 17; x >>>= 0;
+          x ^= x << 5; x >>>= 0;
+          return x / 0xFFFFFFFF;
+        };
+      }
+
+      function updateRaceFromLobby(l){
+        if(!l){ drawIdle(); return; }
+        const maker = l.maker_addr;
+        const taker = l.taker_addr || "0x0000000000000000000000000000000000000000";
+        const seed = (l.settle_seed != null) ? Number(l.settle_seed) : (hashStrTo32(l.lobby_id + maker + taker) >>> 0);
+        const status = l.status;
+        setTags(l);
+        if(status === "SETTLED"){
+          animateRace(seed, l.maker_time || 1200, l.taker_time || 1200, l.winner_addr || null);
+        }else{
+          drawPreview(seed, status, l.maker_commit, l.taker_commit, !!l.maker_revealed, !!l.taker_revealed);
+        }
+      }
+
+      function hashStrTo32(s){
+        // tiny non-crypto hash (UI only)
+        let h = 2166136261;
+        for(let i=0;i<s.length;i++){
+          h ^= s.charCodeAt(i);
+          h = Math.imul(h, 16777619);
+        }
+        return h >>> 0;
+      }
+
+      function drawPreview(seed, status, mCommit, tCommit, mRev, tRev){
+        drawIdle();
+        const w = canvas.clientWidth, h = canvas.clientHeight;
+        const rand = prng(seed);
+        const t = (unix_ts() % 9) / 9;
+        const laneY = [84, 124, 164, 204];
+        const mk = laneY[1], tk = laneY[2];
+        const x0 = 38;
+        const x1 = w - 58;
+        const mpos = x0 + (x1-x0) * (mCommit ? (0.25 + t*0.5) : 0.06);
+        const tpos = x0 + (x1-x0) * (tCommit ? (0.22 + t*0.48) : 0.05);
+        drawCar(mpos, mk, "maker", mRev ? "good" : (mCommit ? "warn" : "bad"), rand());
+        drawCar(tpos, tk, "taker", tRev ? "good" : (tCommit ? "warn" : "bad"), rand());
+        ctx.fillStyle = "rgba(255,255,255,.75)";
+        ctx.font = "12px var(--mono)";
+        ctx.fillText("status: " + status, 20, h-18);
+      }
+
+      function drawCar(x, y, label, vibe, r){
+        const w = canvas.clientWidth;
+        const hue = vibe === "good" ? 150 : (vibe === "warn" ? 42 : 345);
+        const c1 = `hsla(${hue}, 90%, 62%, .95)`;
+        const c2 = `hsla(${hue+18}, 90%, 56%, .85)`;
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate((r - 0.5) * 0.06);
+        ctx.fillStyle = "rgba(0,0,0,.28)";
+        ctx.beginPath();
+        ctx.ellipse(-4, 14, 30, 10, 0, 0, Math.PI*2);
+        ctx.fill();
+        ctx.fillStyle = c1;
+        ctx.strokeStyle = "rgba(255,255,255,.18)";
+        ctx.lineWidth = 1;
+        roundRect(ctx, -26, -10, 52, 22, 9);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = c2;
+        roundRect(ctx, -10, -16, 28, 12, 7);
+        ctx.fill();
