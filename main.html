@@ -1240,3 +1240,72 @@
         ctx.fillStyle = c2;
         roundRect(ctx, -10, -16, 28, 12, 7);
         ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,.82)";
+        ctx.font = "11px var(--mono)";
+        ctx.fillText(label, -22, 4);
+        ctx.restore();
+      }
+
+      function roundRect(ctx, x,y,w,h,r){
+        const rr = Math.min(r, w/2, h/2);
+        ctx.beginPath();
+        ctx.moveTo(x+rr, y);
+        ctx.arcTo(x+w, y, x+w, y+h, rr);
+        ctx.arcTo(x+w, y+h, x, y+h, rr);
+        ctx.arcTo(x, y+h, x, y, rr);
+        ctx.arcTo(x, y, x+w, y, rr);
+        ctx.closePath();
+      }
+
+      function animateRace(seed, makerTime, takerTime, winner){
+        if(anim) cancelAnimationFrame(anim);
+        const w = canvas.clientWidth, h = canvas.clientHeight;
+        const rand = prng(seed);
+        const laneY = [84, 124, 164, 204];
+        const mk = laneY[1], tk = laneY[2];
+        const x0 = 42;
+        const x1 = w - 62;
+        const t0 = performance.now();
+        const dur = 2800 + Math.round(rand()*900);
+        const mScale = makerTime / Math.max(200, Math.min(2600, makerTime));
+        const tScale = takerTime / Math.max(200, Math.min(2600, takerTime));
+        const mBias = 0.9 + (mScale-1)*0.06;
+        const tBias = 0.9 + (tScale-1)*0.06;
+
+        function frame(now){
+          const k = Math.min(1, (now - t0) / dur);
+          drawIdle();
+          const ease = k < 0.5 ? (2*k*k) : (1 - Math.pow(-2*k+2, 2)/2);
+          const mx = x0 + (x1-x0) * Math.min(1, ease / mBias);
+          const tx = x0 + (x1-x0) * Math.min(1, ease / tBias);
+          drawCar(mx, mk, "maker", "primary", rand());
+          drawCar(tx, tk, "taker", "primary", rand());
+          // sparks
+          drawSparks(x0 + (x1-x0)*ease, 70 + rand()*140, rand, k);
+          drawHud(seed, makerTime, takerTime, winner, k);
+          if(k < 1) anim = requestAnimationFrame(frame);
+        }
+        anim = requestAnimationFrame(frame);
+      }
+
+      function drawSparks(x, y, rand, k){
+        const n = 16;
+        for(let i=0;i<n;i++){
+          const a = rand()*Math.PI*2;
+          const d = (10 + rand()*50) * (1-k*0.25);
+          const px = x + Math.cos(a)*d;
+          const py = y + Math.sin(a)*d;
+          ctx.strokeStyle = `rgba(255,200,87,${0.15 + rand()*0.35})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.lineTo(px, py);
+          ctx.stroke();
+        }
+      }
+
+      function drawHud(seed, makerTime, takerTime, winner, k){
+        const w = canvas.clientWidth, h = canvas.clientHeight;
+        const boxW = 340;
+        const boxH = 72;
+        const x = w - boxW - 16;
