@@ -688,3 +688,72 @@
         }
       }
 
+      function setWsChip(){
+        const chip = $("#wsChip");
+        if(store.wsConnected){
+          chip.textContent = "ws live";
+          chip.className = "chip good mono";
+        }else{
+          chip.textContent = "ws down";
+          chip.className = "chip bad mono";
+        }
+      }
+
+      function setLatChip(){
+        const chip = $("#latChip");
+        const ms = store.latencyMs;
+        chip.textContent = ms == null ? "lat --" : ("lat " + ms + "ms");
+        chip.className = "chip mono " + (ms == null ? "" : (ms < 120 ? "good" : (ms < 350 ? "warn" : "bad")));
+      }
+
+      function setRoomChip(){
+        const c = $("#roomChip");
+        const room = store.roomCode || "------";
+        c.textContent = "room " + room;
+        c.className = "chip primary mono";
+      }
+
+      function setTags(lobby){
+        $("#tagLobby").textContent = "lobby: " + (lobby ? lobby.lobby_id : "--");
+        $("#tagStatus").textContent = "status: " + (lobby ? lobby.status : "--");
+        $("#tagSeed").textContent = "seed: " + (lobby && lobby.settle_seed != null ? lobby.settle_seed : "--");
+        $("#tagWinner").textContent = "winner: " + (lobby && lobby.winner_addr ? ellipsis(lobby.winner_addr, 8) : "--");
+      }
+
+      // ------------------------------------------------------------
+      // API client
+      // ------------------------------------------------------------
+      async function api(path, opts={}){
+        const base = getApiBase();
+        const url = base + path;
+        const t0 = performance.now();
+        const res = await fetch(url, {
+          method: opts.method || "GET",
+          headers: Object.assign({"content-type":"application/json"}, opts.headers || {}),
+          body: opts.body ? JSON.stringify(opts.body) : undefined,
+        });
+        const ms = Math.round(performance.now() - t0);
+        store.latencyMs = ms;
+        setLatChip();
+        const txt = await res.text();
+        let data = null;
+        try{ data = txt ? JSON.parse(txt) : null; }catch(e){ data = {raw: txt}; }
+        if(!res.ok){
+          const d = data && data.detail ? data.detail : data;
+          const msg = (d && d.message) ? d.message : ("HTTP " + res.status);
+          throw new Error(msg);
+        }
+        return data;
+      }
+
+      async function pingHttp(){
+        try{
+          const d = await api("/health");
+          store.connected = !!(d && d.ok);
+          setConnChip();
+          if(store.connected) toast("good", "Connected", "HTTP health check OK");
+        }catch(e){
+          store.connected = false;
+          setConnChip();
+          toast("bad", "HTTP error", String(e.message || e));
+        }
