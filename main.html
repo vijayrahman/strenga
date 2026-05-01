@@ -1309,3 +1309,72 @@
         const boxW = 340;
         const boxH = 72;
         const x = w - boxW - 16;
+        const y = h - boxH - 14;
+        ctx.fillStyle = "rgba(0,0,0,.45)";
+        ctx.strokeStyle = "rgba(255,255,255,.14)";
+        ctx.lineWidth = 1;
+        roundRect(ctx, x, y, boxW, boxH, 14);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = "rgba(255,255,255,.78)";
+        ctx.font = "12px var(--mono)";
+        ctx.fillText("seed " + seed, x+14, y+22);
+        ctx.fillText("maker time " + makerTime, x+14, y+42);
+        ctx.fillText("taker time " + takerTime, x+14, y+60);
+        if(k >= 0.99){
+          const win = winner ? ellipsis(winner, 8) : "--";
+          ctx.fillStyle = "rgba(46,230,154,.95)";
+          ctx.fillText("winner " + win, x+174, y+22);
+        }
+      }
+
+      // ------------------------------------------------------------
+      // init + handlers
+      // ------------------------------------------------------------
+      async function computeCommit(){
+        const player = getPlayerAddr();
+        const salt = String($("#salt").value || "").trim();
+        if(!salt) throw new Error("salt missing");
+        const turbo = clamp(Number($("#turbo").value), 0, 10);
+        const drift = clamp(Number($("#drift").value), 0, 10);
+        const sabotage = clamp(Number($("#sabotage").value), 0, 6);
+        const h = await blakeishCommit(player, salt, turbo, drift, sabotage);
+        $("#commitHash").value = h;
+        await navigator.clipboard.writeText(h);
+        toast("good", "Commit computed", "copied to clipboard");
+        logLine("commit computed for " + player + " -> " + ellipsis(h, 12));
+      }
+
+      function ensureSalt(){
+        const s = String($("#salt").value || "").trim();
+        if(!s){
+          $("#salt").value = newSalt();
+        }
+      }
+
+      function bind(){
+        $("#btnConnect").onclick = async () => {
+          await pingHttp();
+          await wsConnect();
+          await refreshLobbies("OPEN");
+        };
+        $("#btnRefresh").onclick = async () => refreshLobbies("OPEN");
+        $("#btnListOpen").onclick = async () => refreshLobbies("OPEN");
+        $("#btnListAll").onclick = async () => refreshLobbies("ALL");
+        $("#btnOpen").onclick = async () => {
+          try{ await openLobby(); }catch(e){ toast("bad", "Open failed", String(e.message || e)); }
+        };
+        $("#btnJoin").onclick = async () => {
+          try{ await joinLobby(); }catch(e){ toast("bad", "Join failed", String(e.message || e)); }
+        };
+        $("#btnCommit").onclick = async () => {
+          try{ await commitMove(); }catch(e){ toast("bad", "Commit failed", String(e.message || e)); }
+        };
+        $("#btnReveal").onclick = async () => {
+          try{ await revealMove(); }catch(e){ toast("bad", "Reveal failed", String(e.message || e)); }
+        };
+        $("#btnSettle").onclick = async () => {
+          try{ await settle(); }catch(e){ toast("bad", "Settle failed", String(e.message || e)); }
+        };
+        $("#btnMakeSalt").onclick = () => {
+          $("#salt").value = newSalt();
